@@ -79,15 +79,26 @@ npx supabase gen types typescript --project-id <ref> > src/lib/database.types.ts
 
 ## Estado da migração (módulo a módulo, por prioridade)
 1. ✅ Apartamentos — CRUD + gestão de camas
-2. ⬜ Inquilinos — CRUD + checklist de onboarding + checkout
-3. ⬜ Pagamentos — grelha mensal
-4. ⬜ Alertas automáticos
-5. ⬜ Manutenção
-6. ⬜ Despesas
-7. 🟡 Dashboard — versão mínima feita (KPIs + tabela); falta gráfico 12 meses e alertas
-8. ⬜ Mensagens
-9. ⬜ Relatórios (P&L + export CSV)
-10. ⬜ Interessados (leads)
+2. ✅ Inquilinos — CRUD + checklist de onboarding + checkout + lembrete de caução
+3. ✅ Pagamentos — grelha mensal (pendente→pago→atrasado) + "marcar mês todo pago"
+4. ✅ Alertas automáticos — comunicação ao senhorio (15 dias), rendas em falta,
+   contratos a expirar, manutenções urgentes (`src/lib/alerts.ts`)
+5. ✅ Manutenção — tickets com fecho a gerar despesa automaticamente
+6. ✅ Despesas — por apartamento/categoria
+7. ✅ Dashboard — KPIs, alertas em destaque, gráfico de receita cobrada
+   (últimos 12 meses, a partir de `payments`), tabela de apartamentos
+8. ✅ Mensagens — templates (renda/boas-vindas/vistoria/personalizada),
+   WhatsApp (wa.me), email, copiar (`src/lib/messages.ts` +
+   `MessageModal`, partilhado com Alertas)
+9. ✅ Relatórios — P&L mensal por apartamento (receita cobrada real via
+   `payments`, não a renda atual) + export CSV
+10. ✅ Interessados (leads) — CRUD + conversão em inquilino (cria tenant e
+    marca o lead como convertido)
+
+Todos os módulos do plano inicial estão implementados. Por testar/validar
+com dados reais; ainda por fazer nesta fase: deploy (Vercel/Netlify),
+subscrições Realtime no frontend (a tabela já está preparada), paginação
+para quando a lista de inquilinos passar de ~80.
 
 ## Comandos
 ```

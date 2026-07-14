@@ -11,12 +11,12 @@ export function Field({ label, children }: { label: string; children: ReactNode 
   )
 }
 
-export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...props} className={inputCls} />
+export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
+  return <input {...props} className={className ? `${inputCls} ${className}` : inputCls} />
 }
 
-export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select {...props} className={inputCls} />
+export function Select({ className, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
+  return <select {...props} className={className ? `${inputCls} ${className}` : inputCls} />
 }
 
 export function FieldRow({ children }: { children: ReactNode }) {

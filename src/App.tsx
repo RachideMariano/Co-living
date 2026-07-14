@@ -7,7 +7,13 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Properties from './pages/Properties'
 import Tenants from './pages/Tenants'
-import ComingSoon from './pages/ComingSoon'
+import Payments from './pages/Payments'
+import Alerts from './pages/Alerts'
+import Maintenance from './pages/Maintenance'
+import Expenses from './pages/Expenses'
+import Messages from './pages/Messages'
+import Reports from './pages/Reports'
+import Leads from './pages/Leads'
 
 export default function App() {
   return (
@@ -21,13 +27,13 @@ export default function App() {
                 <Route index element={<Dashboard />} />
                 <Route path="apartamentos" element={<Properties />} />
                 <Route path="inquilinos" element={<Tenants />} />
-                <Route path="pagamentos" element={<ComingSoon title="Pagamentos" />} />
-                <Route path="alertas" element={<ComingSoon title="Alertas" />} />
-                <Route path="manutencao" element={<ComingSoon title="Manutenção" />} />
-                <Route path="despesas" element={<ComingSoon title="Despesas" />} />
-                <Route path="mensagens" element={<ComingSoon title="Mensagens" />} />
-                <Route path="relatorios" element={<ComingSoon title="Relatórios" />} />
-                <Route path="interessados" element={<ComingSoon title="Interessados" />} />
+                <Route path="pagamentos" element={<Payments />} />
+                <Route path="alertas" element={<Alerts />} />
+                <Route path="manutencao" element={<Maintenance />} />
+                <Route path="despesas" element={<Expenses />} />
+                <Route path="mensagens" element={<Messages />} />
+                <Route path="relatorios" element={<Reports />} />
+                <Route path="interessados" element={<Leads />} />
               </Route>
             </Route>
           </Routes>

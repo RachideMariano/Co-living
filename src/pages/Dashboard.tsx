@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import PageHead from '../components/PageHead'
 import Empty from '../components/Empty'
 import Pill from '../components/Pill'
@@ -6,20 +7,30 @@ import { Button } from '../components/Button'
 import { useTilt } from '../hooks/useTilt'
 import { eur } from '../lib/format'
 import { occupancyOf, revenueOf, marginOf } from '../lib/business'
+import { computeAlerts } from '../lib/alerts'
 import { listProperties, type Property } from '../lib/api/properties'
-import { listActiveTenantsSummary, type ActiveTenantSummary } from '../lib/api/tenants'
-import { useNavigate } from 'react-router-dom'
+import { listTenants, listActiveTenantsSummary, type ActiveTenantSummary, type Tenant } from '../lib/api/tenants'
+import { listOnboarding, type Onboarding } from '../lib/api/onboarding'
+import { listPayments, type Payment } from '../lib/api/payments'
+import { listMaintenanceTickets, type MaintenanceTicket } from '../lib/api/maintenance'
 
 export default function Dashboard() {
   const [properties, setProperties] = useState<Property[]>([])
-  const [tenants, setTenants] = useState<ActiveTenantSummary[]>([])
+  const [activeTenants, setActiveTenants] = useState<ActiveTenantSummary[]>([])
+  const [tenants, setTenants] = useState<Tenant[]>([])
+  const [onboarding, setOnboarding] = useState<Onboarding[]>([])
+  const [payments, setPayments] = useState<Payment[]>([])
+  const [tickets, setTickets] = useState<MaintenanceTicket[]>([])
   const [loading, setLoading] = useState(true)
   const tilt = useTilt()
   const nav = useNavigate()
 
   useEffect(() => {
-    Promise.all([listProperties(), listActiveTenantsSummary()]).then(([p, t]) => {
-      setProperties(p); setTenants(t); setLoading(false)
+    Promise.all([
+      listProperties(), listActiveTenantsSummary(), listTenants(), listOnboarding(), listPayments(), listMaintenanceTickets(),
+    ]).then(([p, at, t, ob, pay, tk]) => {
+      setProperties(p); setActiveTenants(at); setTenants(t); setOnboarding(ob); setPayments(pay); setTickets(tk)
+      setLoading(false)
     })
   }, [])
 
@@ -35,13 +46,24 @@ export default function Dashboard() {
     )
   }
 
-  const totalRev = properties.reduce((s, p) => s + revenueOf(p, tenants), 0)
+  const totalRev = properties.reduce((s, p) => s + revenueOf(p, activeTenants), 0)
   const totalRent = properties.reduce((s, p) => s + (p.head_rent || 0), 0)
   const totalUtil = properties.reduce((s, p) => s + (p.utilities || 0), 0)
   const totalMargin = totalRev - totalRent - totalUtil
   const totalBeds = properties.reduce((s, p) => s + p.beds.length, 0)
-  const occBeds = tenants.length
+  const occBeds = activeTenants.length
   const occPct = totalBeds ? Math.round((occBeds / totalBeds) * 100) : 0
+  const alerts = computeAlerts(properties, tenants, onboarding, payments, tickets)
+
+  const months12 = Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - (11 - i))
+    return { year: d.getFullYear(), month: d.getMonth() + 1, label: d.toLocaleDateString('pt-PT', { month: 'short' }) }
+  })
+  const chartData = months12.map(({ year, month, label }) => ({
+    label,
+    value: payments.filter(p => p.year === year && p.month === month && p.status === 'paid').reduce((s, p) => s + p.amount, 0),
+  }))
+  const chartMax = Math.max(...chartData.map(d => d.value), 1)
 
   return (
     <>
@@ -51,6 +73,39 @@ export default function Dashboard() {
         <Kpi label="Custo total" value={eur(totalRent + totalUtil)} sub={`${eur(totalRent)} renda · ${eur(totalUtil)} util.`} />
         <Kpi label="Margem mensal" value={eur(totalMargin)} color={totalMargin >= 0 ? '#1f9d4d' : 'var(--color-red)'} sub="antes de impostos" />
         <Kpi label="Ocupação" value={`${occPct}%`} sub={`${occBeds}/${totalBeds} camas`} />
+        <Kpi label="Alertas" value={String(alerts.length)} color={alerts.length > 0 ? '#f08b00' : undefined} sub={`${alerts.filter(a => a.level === 'urgent').length} urgentes`} />
+      </div>
+
+      {alerts.length > 0 && (
+        <>
+          <div className="text-[13px] font-bold uppercase tracking-wide text-[var(--ink-3)] mb-3.5">Precisa de atenção</div>
+          {alerts.slice(0, 3).map((a, i) => (
+            <div key={i} className="card flex items-start gap-3.5 p-[17px_19px] mb-3">
+              <div className="text-lg">{a.ico}</div>
+              <div>
+                <div className="text-[14.5px] font-bold">{a.title}</div>
+                <div className="text-[12.5px] text-[var(--ink-2)] font-medium mt-0.5">{a.desc}</div>
+              </div>
+            </div>
+          ))}
+          {alerts.length > 3 && (
+            <div className="text-center mb-6">
+              <button className="link" onClick={() => nav('/alertas')}>Ver todos os {alerts.length} alertas →</button>
+            </div>
+          )}
+        </>
+      )}
+
+      <div className="text-[13px] font-bold uppercase tracking-wide text-[var(--ink-3)] mb-3.5">Receita cobrada · últimos 12 meses</div>
+      <div className="card p-5 mb-6">
+        <div className="flex items-end gap-2" style={{ height: 140 }}>
+          {chartData.map((d, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
+              <div className="w-full rounded-t-md bg-[var(--color-blue)]/70" style={{ height: `${Math.max((d.value / chartMax) * 100, 2)}%` }} title={eur(d.value)} />
+              <span className="text-[10px] text-[var(--ink-3)] font-semibold uppercase">{d.label}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="text-[13px] font-bold uppercase tracking-wide text-[var(--ink-3)] mb-3.5">Apartamentos</div>
@@ -68,15 +123,15 @@ export default function Dashboard() {
           </thead>
           <tbody>
             {properties.map(p => {
-              const o = occupancyOf(p, tenants)
-              const m = marginOf(p, tenants)
+              const o = occupancyOf(p, activeTenants)
+              const m = marginOf(p, activeTenants)
               const tone = o.pct >= 80 ? 'green' : o.pct >= 50 ? 'amber' : 'red'
               return (
                 <tr key={p.id} className="cursor-pointer hover:bg-blue-500/5 border-t border-black/5 dark:border-white/5" onClick={() => nav('/apartamentos')}>
                   <td className="p-3.5 font-semibold">{p.name}</td>
                   <td className="p-3.5 text-[var(--ink-3)]">{p.city || '—'}</td>
                   <td className="p-3.5"><Pill tone={tone}>{o.occ}/{o.total}</Pill></td>
-                  <td className="p-3.5" style={{ fontVariantNumeric: 'tabular-nums' }}>{eur(revenueOf(p, tenants))}</td>
+                  <td className="p-3.5" style={{ fontVariantNumeric: 'tabular-nums' }}>{eur(revenueOf(p, activeTenants))}</td>
                   <td className="p-3.5 text-[var(--ink-3)]" style={{ fontVariantNumeric: 'tabular-nums' }}>{eur(p.head_rent)}</td>
                   <td className="p-3.5 font-bold" style={{ color: m >= 0 ? '#1f9d4d' : 'var(--color-red)', fontVariantNumeric: 'tabular-nums' }}>{eur(m)}</td>
                 </tr>
