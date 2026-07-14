@@ -100,6 +100,33 @@ com dados reais; ainda por fazer nesta fase: deploy (Vercel/Netlify),
 subscrições Realtime no frontend (a tabela já está preparada), paginação
 para quando a lista de inquilinos passar de ~80.
 
+## Extensões (ver `supabase/migrations/0002_features.sql` e `0003_weekly_digest.sql`)
+- `landlords` — senhorio como entidade própria (`properties.landlord_id`);
+  colunas antigas `landlord_name`/`landlord_contact` ficam por compatibilidade
+  mas deixam de ser escritas pela UI
+- `tenants.guarantor_*` — fiador/garante (nome, contacto, relação)
+- `utility_bills` — reconciliação utilities real vs. estimado, editável
+  inline em Relatórios (`UtilityBillCell`)
+- `maintenance_schedules` — manutenção preventiva recorrente, gera alerta
+  quando a `next_due` está a ≤14 dias ou atrasada
+- `documents` + bucket privado `documents` no Storage — anexos por
+  inquilino/apartamento (`DocumentsSection`, URLs assinadas, nunca públicas)
+- `inspections` — vistorias de entrada/saída com fotos (`InspectionsSection`,
+  mesmo bucket)
+- Página `/calendario` — agrega fim de contratos, vistorias e manutenção
+  preventiva num grid mensal, sem tabela própria (deriva de outras tabelas)
+- PWA (`vite-plugin-pwa`) — instalável no telemóvel; ícone atual é SVG
+  (`public/pwa-icon.svg`) — funciona em Android/Chrome, iOS/Safari tem
+  suporte limitado a ícones SVG em "Adicionar ao ecrã principal" e pode
+  não mostrar o ícone correto; gerar PNGs 192/512 é o próximo passo se isso
+  incomodar
+- Resumo semanal por email — `weekly_digest()` corre via `pg_cron` +
+  `pg_net` diretamente na base de dados (sem Edge Function), envia por
+  Resend. Requer secret `resend_api_key` no Supabase Vault
+  (`select vault.create_secret('re_...', 'resend_api_key');`) e a lista
+  `recipients` dentro da função ajustada aos emails reais — sem isso a
+  função sai silenciosamente sem enviar nada.
+
 ## Comandos
 ```
 npm run dev      # servidor de desenvolvimento

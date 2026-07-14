@@ -4,9 +4,10 @@ import type { Tenant } from './api/tenants'
 import type { Onboarding } from './api/onboarding'
 import type { Payment } from './api/payments'
 import type { MaintenanceTicket } from './api/maintenance'
+import type { MaintenanceSchedule } from './api/maintenanceSchedules'
 
 export type AlertLevel = 'urgent' | 'warn' | 'info'
-export type AlertType = 'landlord_comm' | 'contract_end' | 'prop_contract' | 'payment' | 'maintenance'
+export type AlertType = 'landlord_comm' | 'contract_end' | 'prop_contract' | 'payment' | 'maintenance' | 'maintenance_schedule'
 
 export interface Alert {
   level: AlertLevel
@@ -20,7 +21,8 @@ export interface Alert {
 }
 
 export function computeAlerts(
-  properties: Property[], tenants: Tenant[], onboarding: Onboarding[], payments: Payment[], tickets: MaintenanceTicket[] = []
+  properties: Property[], tenants: Tenant[], onboarding: Onboarding[], payments: Payment[], tickets: MaintenanceTicket[] = [],
+  schedules: MaintenanceSchedule[] = []
 ): Alert[] {
   const alerts: Alert[] = []
   const today = todayISO()
@@ -101,6 +103,19 @@ export function computeAlerts(
       desc: `${p ? p.name : ''} — aberto em ${fmtDate(tk.opened_at)}.`,
       propertyId: tk.property_id, ticketId: tk.id,
     })
+  })
+
+  schedules.forEach(s => {
+    const d = daysBetween(today, s.next_due)
+    if (d <= 14) {
+      const p = propById(s.property_id)
+      alerts.push({
+        level: d < 0 ? 'urgent' : d <= 3 ? 'urgent' : 'warn', ico: '🔁', type: 'maintenance_schedule',
+        title: d < 0 ? `Manutenção preventiva atrasada: ${s.title}` : `Manutenção preventiva a vencer: ${s.title}`,
+        desc: `${p ? p.name : ''} — prevista para ${fmtDate(s.next_due)}.`,
+        propertyId: s.property_id,
+      })
+    }
   })
 
   const order: Record<AlertLevel, number> = { urgent: 0, warn: 1, info: 2 }

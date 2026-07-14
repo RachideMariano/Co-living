@@ -13,6 +13,10 @@ import {
   type Tenant, type TenantInput,
 } from '../lib/api/tenants'
 import { listOnboarding, updateOnboarding, type Onboarding, type OnboardingPatch } from '../lib/api/onboarding'
+import { listPayments, type Payment } from '../lib/api/payments'
+import { lateCount } from '../lib/business'
+import DocumentsSection from '../components/DocumentsSection'
+import InspectionsSection from '../components/InspectionsSection'
 
 const STEPS: { key: keyof OnboardingPatch; label: string }[] = [
   { key: 'contract_signed', label: 'Contrato assinado' },
@@ -32,16 +36,18 @@ export default function Tenants() {
   const [tenants, setTenants] = useState<Tenant[]>([])
   const [onboarding, setOnboarding] = useState<Onboarding[]>([])
   const [properties, setProperties] = useState<Property[]>([])
+  const [payments, setPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Tenant | null | 'new'>(null)
   const [checklistFor, setChecklistFor] = useState<Tenant | null>(null)
   const toast = useToast()
 
   const refresh = async () => {
-    const [t, o, p] = await Promise.all([listTenants(), listOnboarding(), listProperties()])
+    const [t, o, p, pay] = await Promise.all([listTenants(), listOnboarding(), listProperties(), listPayments()])
     setTenants(t)
     setOnboarding(o)
     setProperties(p)
+    setPayments(pay)
     setLoading(false)
   }
   useEffect(() => { refresh() }, [])
@@ -81,6 +87,7 @@ export default function Tenants() {
                 <th className="p-3.5 font-bold">Contrato</th>
                 <th className="p-3.5 font-bold">Senhorio avisado</th>
                 <th className="p-3.5 font-bold">Onboarding</th>
+                <th className="p-3.5 font-bold">Risco</th>
               </tr>
             </thead>
             <tbody>
@@ -101,6 +108,13 @@ export default function Tenants() {
                     <td className="p-3.5">{ob?.landlord_notified ? <Pill tone="green">Sim ✓</Pill> : <Pill tone="red">Pendente</Pill>}</td>
                     <td className="p-3.5" onClick={e => e.stopPropagation()}>
                       <button className="link text-xs" onClick={() => setChecklistFor(t)}>{doneCount}/6 · Checklist</button>
+                    </td>
+                    <td className="p-3.5">
+                      {(() => {
+                        const late = lateCount(t.id, payments)
+                        if (late === 0) return <span className="text-[var(--ink-3)] text-xs">—</span>
+                        return <Pill tone={late >= 3 ? 'red' : 'amber'}>⚠ {late}x atraso{late > 1 ? 's' : ''}</Pill>
+                      })()}
                     </td>
                   </tr>
                 )
@@ -182,6 +196,8 @@ function TenantModal({ tenant, properties, activeTenants, onClose, onSaved, toas
       property_id: tenant.property_id, bed_id: tenant.bed_id, name: tenant.name, contact: tenant.contact ?? '',
       rent: tenant.rent, deposit: tenant.deposit, move_in: tenant.move_in ?? '', contract_end: tenant.contract_end ?? '',
       notes: tenant.notes ?? '',
+      guarantor_name: tenant.guarantor_name ?? '', guarantor_contact: tenant.guarantor_contact ?? '',
+      guarantor_relationship: tenant.guarantor_relationship ?? '',
     } : { ...emptyForm, property_id: properties[0]?.id ?? '' }
   )
   const [saving, setSaving] = useState(false)
@@ -253,6 +269,14 @@ function TenantModal({ tenant, properties, activeTenants, onClose, onSaved, toas
         <Field label="Data de entrada"><Input type="date" value={form.move_in ?? ''} onChange={set('move_in')} /></Field>
         <Field label="Fim do contrato"><Input type="date" value={form.contract_end ?? ''} onChange={set('contract_end')} /></Field>
       </FieldRow>
+      {tenant && <DocumentsSection tenantId={tenant.id} />}
+      {tenant && <InspectionsSection tenantId={tenant.id} />}
+      <div className="text-xs font-bold uppercase tracking-wide text-[var(--ink-3)] mb-2 mt-1">Fiador / garante (opcional)</div>
+      <FieldRow>
+        <Field label="Nome do fiador"><Input value={form.guarantor_name ?? ''} onChange={set('guarantor_name')} /></Field>
+        <Field label="Relação"><Input value={form.guarantor_relationship ?? ''} onChange={set('guarantor_relationship')} placeholder="Pai, mãe, amigo…" /></Field>
+      </FieldRow>
+      <Field label="Contacto do fiador"><Input value={form.guarantor_contact ?? ''} onChange={set('guarantor_contact')} placeholder="Telefone ou email" /></Field>
       <Field label="Notas">
         <textarea
           value={form.notes ?? ''} onChange={set('notes')} placeholder="Documentos, referências, observações…"

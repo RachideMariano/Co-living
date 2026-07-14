@@ -7,15 +7,16 @@ import { listTenants } from '../lib/api/tenants'
 import { listOnboarding } from '../lib/api/onboarding'
 import { listPayments } from '../lib/api/payments'
 import { listMaintenanceTickets } from '../lib/api/maintenance'
+import { listMaintenanceSchedules } from '../lib/api/maintenanceSchedules'
 
 export default function Layout() {
   const [alertCount, setAlertCount] = useState(0)
 
   useEffect(() => {
     Promise.all([
-      listProperties(), listTenants(), listOnboarding(), listPayments(), listMaintenanceTickets(),
-    ]).then(([p, t, ob, pay, tk]) => {
-      setAlertCount(computeAlerts(p, t, ob, pay, tk).length)
+      listProperties(), listTenants(), listOnboarding(), listPayments(), listMaintenanceTickets(), listMaintenanceSchedules(),
+    ]).then(([p, t, ob, pay, tk, sch]) => {
+      setAlertCount(computeAlerts(p, t, ob, pay, tk, sch).length)
     })
   }, [])
 

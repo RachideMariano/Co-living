@@ -12,6 +12,8 @@ const items = [
   { to: '/mensagens', label: 'Mensagens', ico: '✉', cls: 'i-msg' },
   { to: '/relatorios', label: 'Relatórios', ico: '📊', cls: 'i-dash' },
   { to: '/interessados', label: 'Interessados', ico: '★', cls: 'i-user' },
+  { to: '/senhorios', label: 'Senhorios', ico: '🧑', cls: 'i-home' },
+  { to: '/calendario', label: 'Calendário', ico: '📅', cls: 'i-pay' },
 ]
 
 const icoBg: Record<string, string> = {

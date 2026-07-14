@@ -13,6 +13,7 @@ import { listTenants, listActiveTenantsSummary, type ActiveTenantSummary, type T
 import { listOnboarding, type Onboarding } from '../lib/api/onboarding'
 import { listPayments, type Payment } from '../lib/api/payments'
 import { listMaintenanceTickets, type MaintenanceTicket } from '../lib/api/maintenance'
+import { listMaintenanceSchedules, type MaintenanceSchedule } from '../lib/api/maintenanceSchedules'
 
 export default function Dashboard() {
   const [properties, setProperties] = useState<Property[]>([])
@@ -21,15 +22,16 @@ export default function Dashboard() {
   const [onboarding, setOnboarding] = useState<Onboarding[]>([])
   const [payments, setPayments] = useState<Payment[]>([])
   const [tickets, setTickets] = useState<MaintenanceTicket[]>([])
+  const [schedules, setSchedules] = useState<MaintenanceSchedule[]>([])
   const [loading, setLoading] = useState(true)
   const tilt = useTilt()
   const nav = useNavigate()
 
   useEffect(() => {
     Promise.all([
-      listProperties(), listActiveTenantsSummary(), listTenants(), listOnboarding(), listPayments(), listMaintenanceTickets(),
-    ]).then(([p, at, t, ob, pay, tk]) => {
-      setProperties(p); setActiveTenants(at); setTenants(t); setOnboarding(ob); setPayments(pay); setTickets(tk)
+      listProperties(), listActiveTenantsSummary(), listTenants(), listOnboarding(), listPayments(), listMaintenanceTickets(), listMaintenanceSchedules(),
+    ]).then(([p, at, t, ob, pay, tk, sch]) => {
+      setProperties(p); setActiveTenants(at); setTenants(t); setOnboarding(ob); setPayments(pay); setTickets(tk); setSchedules(sch)
       setLoading(false)
     })
   }, [])
@@ -53,7 +55,7 @@ export default function Dashboard() {
   const totalBeds = properties.reduce((s, p) => s + p.beds.length, 0)
   const occBeds = activeTenants.length
   const occPct = totalBeds ? Math.round((occBeds / totalBeds) * 100) : 0
-  const alerts = computeAlerts(properties, tenants, onboarding, payments, tickets)
+  const alerts = computeAlerts(properties, tenants, onboarding, payments, tickets, schedules)
 
   const months12 = Array.from({ length: 12 }, (_, i) => {
     const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - (11 - i))

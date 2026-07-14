@@ -14,6 +14,8 @@ import Expenses from './pages/Expenses'
 import Messages from './pages/Messages'
 import Reports from './pages/Reports'
 import Leads from './pages/Leads'
+import Landlords from './pages/Landlords'
+import CalendarPage from './pages/Calendar'
 
 export default function App() {
   return (
@@ -34,6 +36,8 @@ export default function App() {
                 <Route path="mensagens" element={<Messages />} />
                 <Route path="relatorios" element={<Reports />} />
                 <Route path="interessados" element={<Leads />} />
+                <Route path="senhorios" element={<Landlords />} />
+                <Route path="calendario" element={<CalendarPage />} />
               </Route>
             </Route>
           </Routes>

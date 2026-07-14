@@ -13,6 +13,7 @@ import { listTenants, type Tenant } from '../lib/api/tenants'
 import { listOnboarding, updateOnboarding, type Onboarding } from '../lib/api/onboarding'
 import { listPayments, markMonthPaid, type Payment } from '../lib/api/payments'
 import { listMaintenanceTickets, type MaintenanceTicket } from '../lib/api/maintenance'
+import { listMaintenanceSchedules, type MaintenanceSchedule } from '../lib/api/maintenanceSchedules'
 
 const levelCls: Record<Alert['level'], string> = {
   urgent: 'border-l-4 border-[var(--color-red)]',
@@ -31,6 +32,7 @@ export default function Alerts() {
   const [onboarding, setOnboarding] = useState<Onboarding[]>([])
   const [payments, setPayments] = useState<Payment[]>([])
   const [tickets, setTickets] = useState<MaintenanceTicket[]>([])
+  const [schedules, setSchedules] = useState<MaintenanceSchedule[]>([])
   const [loading, setLoading] = useState(true)
   const [messageFor, setMessageFor] = useState<Tenant | null>(null)
   const [landlordFor, setLandlordFor] = useState<Tenant | null>(null)
@@ -38,17 +40,17 @@ export default function Alerts() {
   const nav = useNavigate()
 
   const refresh = async () => {
-    const [p, t, o, pay, tk] = await Promise.all([
-      listProperties(), listTenants(), listOnboarding(), listPayments(), listMaintenanceTickets(),
+    const [p, t, o, pay, tk, sch] = await Promise.all([
+      listProperties(), listTenants(), listOnboarding(), listPayments(), listMaintenanceTickets(), listMaintenanceSchedules(),
     ])
-    setProperties(p); setTenants(t); setOnboarding(o); setPayments(pay); setTickets(tk)
+    setProperties(p); setTenants(t); setOnboarding(o); setPayments(pay); setTickets(tk); setSchedules(sch)
     setLoading(false)
   }
   useEffect(() => { refresh() }, [])
 
   if (loading) return <PageHead title="Alertas" subtitle="A carregar…" />
 
-  const alerts = computeAlerts(properties, tenants, onboarding, payments, tickets)
+  const alerts = computeAlerts(properties, tenants, onboarding, payments, tickets, schedules)
   const tenantById = (id?: string) => tenants.find(t => t.id === id)
   const propertyById = (id?: string) => properties.find(p => p.id === id)
 
@@ -98,6 +100,7 @@ export default function Alerts() {
                   {a.type === 'contract_end' && <Button onClick={() => nav('/inquilinos')}>Ver detalhes</Button>}
                   {a.type === 'prop_contract' && <Button onClick={() => nav('/apartamentos')}>Ver detalhes</Button>}
                   {a.type === 'maintenance' && <Button onClick={() => nav('/manutencao')}>Ver manutenção</Button>}
+                  {a.type === 'maintenance_schedule' && <Button onClick={() => nav('/manutencao')}>Ver manutenção preventiva</Button>}
                 </div>
               </div>
             </div>

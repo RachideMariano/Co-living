@@ -6,6 +6,7 @@ export type TenantStatus = 'active' | 'inactive'
 export type TicketStatus = 'open' | 'in_progress' | 'done'
 export type TicketPriority = 'normal' | 'urgent'
 export type LeadStatus = 'waiting' | 'contacted' | 'converted' | 'discarded'
+export type InspectionType = 'move_in' | 'move_out'
 
 export interface Database {
   public: {
@@ -18,6 +19,7 @@ export interface Database {
           city: string | null
           landlord_name: string | null
           landlord_contact: string | null
+          landlord_id: string | null
           head_rent: number
           utilities: number
           contract_start: string | null
@@ -56,6 +58,9 @@ export interface Database {
           contract_end: string | null
           status: TenantStatus
           notes: string | null
+          guarantor_name: string | null
+          guarantor_contact: string | null
+          guarantor_relationship: string | null
           created_by: string | null
           created_at: string
           updated_at: string
@@ -158,6 +163,82 @@ export interface Database {
         }
         Insert: Partial<Database['public']['Tables']['app_settings']['Row']>
         Update: Partial<Database['public']['Tables']['app_settings']['Row']>
+        Relationships: []
+      }
+      landlords: {
+        Row: {
+          id: string
+          name: string
+          contact: string | null
+          notes: string | null
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: Partial<Database['public']['Tables']['landlords']['Row']> & { name: string }
+        Update: Partial<Database['public']['Tables']['landlords']['Row']>
+        Relationships: []
+      }
+      utility_bills: {
+        Row: {
+          id: string
+          property_id: string
+          year: number
+          month: number
+          amount: number
+          notes: string | null
+          created_by: string | null
+          created_at: string
+        }
+        Insert: Partial<Database['public']['Tables']['utility_bills']['Row']> & { property_id: string; year: number; month: number; amount: number }
+        Update: Partial<Database['public']['Tables']['utility_bills']['Row']>
+        Relationships: []
+      }
+      maintenance_schedules: {
+        Row: {
+          id: string
+          property_id: string
+          title: string
+          frequency_months: number
+          last_done: string | null
+          next_due: string
+          notes: string | null
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: Partial<Database['public']['Tables']['maintenance_schedules']['Row']> & { property_id: string; title: string; next_due: string }
+        Update: Partial<Database['public']['Tables']['maintenance_schedules']['Row']>
+        Relationships: []
+      }
+      documents: {
+        Row: {
+          id: string
+          tenant_id: string | null
+          property_id: string | null
+          category: string
+          file_path: string
+          file_name: string
+          uploaded_by: string | null
+          created_at: string
+        }
+        Insert: Partial<Database['public']['Tables']['documents']['Row']> & { file_path: string; file_name: string }
+        Update: Partial<Database['public']['Tables']['documents']['Row']>
+        Relationships: []
+      }
+      inspections: {
+        Row: {
+          id: string
+          tenant_id: string
+          type: InspectionType
+          date: string
+          notes: string | null
+          photos: string[]
+          created_by: string | null
+          created_at: string
+        }
+        Insert: Partial<Database['public']['Tables']['inspections']['Row']> & { tenant_id: string; type: InspectionType }
+        Update: Partial<Database['public']['Tables']['inspections']['Row']>
         Relationships: []
       }
     }

@@ -5,7 +5,7 @@ import Empty from '../components/Empty'
 import Pill from '../components/Pill'
 import { Button } from '../components/Button'
 import Modal from '../components/Modal'
-import { Field, FieldRow, Input } from '../components/Field'
+import { Field, FieldRow, Input, Select } from '../components/Field'
 import { useTilt } from '../hooks/useTilt'
 import { useToast } from '../context/ToastContext'
 import { eur } from '../lib/format'
@@ -15,24 +15,28 @@ import {
   type Property, type PropertyInput,
 } from '../lib/api/properties'
 import { listActiveTenantsSummary, type ActiveTenantSummary } from '../lib/api/tenants'
+import { listLandlords, type Landlord } from '../lib/api/landlords'
+import DocumentsSection from '../components/DocumentsSection'
 
 const emptyForm: PropertyInput = {
-  name: '', address: '', city: 'Porto', landlord_name: '', landlord_contact: '',
+  name: '', address: '', city: 'Porto', landlord_id: null,
   head_rent: 0, utilities: 250, contract_start: '', contract_end: '',
 }
 
 export default function Properties() {
   const [properties, setProperties] = useState<Property[]>([])
   const [tenants, setTenants] = useState<ActiveTenantSummary[]>([])
+  const [landlords, setLandlords] = useState<Landlord[]>([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Property | null | 'new'>(null)
   const [bedsFor, setBedsFor] = useState<Property | null>(null)
   const toast = useToast()
 
   const refresh = async () => {
-    const [props, tens] = await Promise.all([listProperties(), listActiveTenantsSummary()])
+    const [props, tens, lls] = await Promise.all([listProperties(), listActiveTenantsSummary(), listLandlords()])
     setProperties(props)
     setTenants(tens)
+    setLandlords(lls)
     setLoading(false)
   }
 
@@ -52,7 +56,7 @@ export default function Properties() {
       ) : (
         properties.map(p => (
           <PropertyCard
-            key={p.id} property={p} tenants={tenants}
+            key={p.id} property={p} tenants={tenants} landlords={landlords}
             onEdit={() => setEditing(p)} onManageBeds={() => setBedsFor(p)}
           />
         ))
@@ -61,6 +65,7 @@ export default function Properties() {
       {editing && (
         <PropertyModal
           property={editing === 'new' ? null : editing}
+          landlords={landlords}
           onClose={() => setEditing(null)}
           onSaved={async () => { await refresh(); setEditing(null) }}
           toast={toast}
@@ -82,13 +87,14 @@ export default function Properties() {
   )
 }
 
-function PropertyCard({ property: p, tenants, onEdit, onManageBeds }: {
-  property: Property; tenants: ActiveTenantSummary[]; onEdit: () => void; onManageBeds: () => void
+function PropertyCard({ property: p, tenants, landlords, onEdit, onManageBeds }: {
+  property: Property; tenants: ActiveTenantSummary[]; landlords: Landlord[]; onEdit: () => void; onManageBeds: () => void
 }) {
   const tilt = useTilt()
   const o = occupancyOf(p, tenants)
   const m = marginOf(p, tenants)
   const tone = o.pct >= 80 ? 'green' : o.pct >= 50 ? 'amber' : 'red'
+  const landlord = landlords.find(l => l.id === p.landlord_id)
 
   return (
     <div ref={tilt.ref} onMouseMove={tilt.onMouseMove} onMouseLeave={tilt.onMouseLeave} className="card tilt p-[22px] mb-4">
@@ -104,7 +110,7 @@ function PropertyCard({ property: p, tenants, onEdit, onManageBeds }: {
               <Pill tone={tone}>{o.occ}/{o.total} camas</Pill>
             </div>
             <p className="text-[13px] text-[var(--ink-3)] font-medium mt-0.5">{p.address}{p.city ? ' · ' + p.city : ''}</p>
-            <p className="text-xs text-[var(--ink-3)] font-medium mt-0.5">Senhorio: {p.landlord_name || '—'} {p.landlord_contact ? '· ' + p.landlord_contact : ''}</p>
+            <p className="text-xs text-[var(--ink-3)] font-medium mt-0.5">Senhorio: {landlord ? landlord.name : '—'} {landlord?.contact ? '· ' + landlord.contact : ''}</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -157,20 +163,20 @@ function Stat({ label, value, color }: { label: string; value: string; color?: s
   )
 }
 
-function PropertyModal({ property, onClose, onSaved, toast }: {
-  property: Property | null; onClose: () => void; onSaved: () => void; toast: (m: string) => void
+function PropertyModal({ property, landlords, onClose, onSaved, toast }: {
+  property: Property | null; landlords: Landlord[]; onClose: () => void; onSaved: () => void; toast: (m: string) => void
 }) {
   const [form, setForm] = useState<PropertyInput>(
     property ? {
       name: property.name, address: property.address ?? '', city: property.city ?? '',
-      landlord_name: property.landlord_name ?? '', landlord_contact: property.landlord_contact ?? '',
+      landlord_id: property.landlord_id,
       head_rent: property.head_rent, utilities: property.utilities,
       contract_start: property.contract_start ?? '', contract_end: property.contract_end ?? '',
     } : emptyForm
   )
   const [saving, setSaving] = useState(false)
 
-  const set = (k: keyof PropertyInput) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const set = (k: keyof PropertyInput) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm(f => ({ ...f, [k]: e.target.type === 'number' ? +e.target.value : e.target.value }))
 
   const save = async () => {
@@ -214,13 +220,19 @@ function PropertyModal({ property, onClose, onSaved, toast }: {
       </FieldRow>
       <FieldRow>
         <Field label="Utilities estimadas (€/mês)"><Input type="number" value={form.utilities} onChange={set('utilities')} /></Field>
-        <Field label="Nome do senhorio"><Input value={form.landlord_name ?? ''} onChange={set('landlord_name')} /></Field>
+        <Field label="Senhorio">
+          <Select value={form.landlord_id ?? ''} onChange={set('landlord_id')}>
+            <option value="">— Sem senhorio associado —</option>
+            {landlords.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+          </Select>
+          <Link to="/senhorios" className="link text-xs mt-1.5 inline-block">Gerir senhorios</Link>
+        </Field>
       </FieldRow>
-      <Field label="Contacto do senhorio"><Input value={form.landlord_contact ?? ''} onChange={set('landlord_contact')} placeholder="Telefone ou email" /></Field>
       <FieldRow>
         <Field label="Início do contrato"><Input type="date" value={form.contract_start ?? ''} onChange={set('contract_start')} /></Field>
         <Field label="Fim do contrato"><Input type="date" value={form.contract_end ?? ''} onChange={set('contract_end')} /></Field>
       </FieldRow>
+      {property && <DocumentsSection propertyId={property.id} />}
     </Modal>
   )
 }
