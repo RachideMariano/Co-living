@@ -6,6 +6,7 @@ import Layout from './components/Layout'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Properties from './pages/Properties'
+import Tenants from './pages/Tenants'
 import ComingSoon from './pages/ComingSoon'
 
 export default function App() {
@@ -19,7 +20,7 @@ export default function App() {
               <Route element={<Layout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="apartamentos" element={<Properties />} />
-                <Route path="inquilinos" element={<ComingSoon title="Inquilinos" />} />
+                <Route path="inquilinos" element={<Tenants />} />
                 <Route path="pagamentos" element={<ComingSoon title="Pagamentos" />} />
                 <Route path="alertas" element={<ComingSoon title="Alertas" />} />
                 <Route path="manutencao" element={<ComingSoon title="Manutenção" />} />

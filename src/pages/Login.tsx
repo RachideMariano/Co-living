@@ -1,11 +1,17 @@
 import { useState, type FormEvent } from 'react'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../context/AuthContext'
 
 export default function Login() {
+  const { session, loading: authLoading } = useAuth()
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  if (!authLoading && session) return <Navigate to="/" replace />
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -14,6 +20,7 @@ export default function Login() {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     setLoading(false)
     if (error) setError('Email ou password incorretos.')
+    else navigate('/', { replace: true })
   }
 
   return (
