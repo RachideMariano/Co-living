@@ -31,10 +31,18 @@ const icoBg: Record<string, string> = {
   'i-landlord': '#000',
 }
 
-export default function Sidebar({ alertCount = 0, mobileOpen = false, onClose }: { alertCount?: number; mobileOpen?: boolean; onClose?: () => void }) {
+export default function Sidebar({ alertCount = 0, mobileOpen = false, onClose, uiMode = 'auto', setUiMode, isMobileMode = false }: { alertCount?: number; mobileOpen?: boolean; onClose?: () => void; uiMode?: 'auto' | 'desktop' | 'mobile'; setUiMode?: (m: 'auto' | 'desktop' | 'mobile') => void; isMobileMode?: boolean }) {
   const mobileClasses = mobileOpen
     ? 'fixed inset-0 left-0 top-0 bottom-0 w-[86%] max-w-[380px] z-50 m-4 rounded-[18px]'
-    : 'hidden'
+    : isMobileMode
+    ? 'hidden'
+    : ''
+
+  const handleModeChange = (v: string) => {
+    if (!setUiMode) return
+    const m = (v as 'auto' | 'desktop' | 'mobile')
+    setUiMode(m)
+  }
 
   return (
     <aside className={`glass-panel ${mobileClasses} w-full md:w-[250px] shrink-0 m-[12px_0_12px_12px] md:m-[18px_0_18px_18px] md:sticky md:top-[18px] md:h-[calc(100vh-36px)] rounded-[18px] md:rounded-[26px] flex flex-col overflow-hidden`}>
@@ -87,13 +95,25 @@ export default function Sidebar({ alertCount = 0, mobileOpen = false, onClose }:
       </nav>
 
       <div className="px-[22px] py-4 text-[11px] text-[var(--ink-3)] font-medium border-t border-black/5 dark:border-white/5 flex flex-col gap-2">
-        <span>Dados sincronizados na cloud</span>
-        <button
-          onClick={() => supabase.auth.signOut()}
-          className="link text-left text-[var(--color-blue)] font-semibold"
-        >
-          Terminar sessão
-        </button>
+        <div className="flex items-center justify-between">
+          <span>Dados sincronizados na cloud</span>
+          <div className="text-[11px] text-[var(--ink-3)]">Modo</div>
+        </div>
+        <div className="flex items-center gap-2">
+          <select value={uiMode} onChange={e => handleModeChange(e.target.value)} className="px-2 py-1 rounded bg-white/50">
+            <option value="auto">Auto</option>
+            <option value="desktop">Desktop</option>
+            <option value="mobile">Mobile</option>
+          </select>
+          <div className="ml-auto">
+            <button
+              onClick={() => supabase.auth.signOut()}
+              className="link text-left text-[var(--color-blue)] font-semibold"
+            >
+              Terminar sessão
+            </button>
+          </div>
+        </div>
       </div>
     </aside>
   )
