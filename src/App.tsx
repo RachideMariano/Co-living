@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { HashRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { ToastProvider } from './context/ToastContext'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -16,12 +16,15 @@ import Reports from './pages/Reports'
 import Leads from './pages/Leads'
 import Landlords from './pages/Landlords'
 import CalendarPage from './pages/Calendar'
+import Receipts from './pages/Receipts'
+import Templates from './pages/Templates'
+import SOPs from './pages/SOPs'
 
 export default function App() {
   return (
     <AuthProvider>
       <ToastProvider>
-        <BrowserRouter>
+        <HashRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route element={<ProtectedRoute />}>
@@ -37,11 +40,15 @@ export default function App() {
                 <Route path="relatorios" element={<Reports />} />
                 <Route path="interessados" element={<Leads />} />
                 <Route path="senhorios" element={<Landlords />} />
+                <Route path="recibos" element={<Receipts />} />
+                <Route path="templates" element={<Templates />} />
+                <Route path="sops" element={<SOPs />} />
+                <Route path="sops/:id" element={<SOPs />} />
                 <Route path="calendario" element={<CalendarPage />} />
               </Route>
             </Route>
           </Routes>
-        </BrowserRouter>
+        </HashRouter>
       </ToastProvider>
     </AuthProvider>
   )

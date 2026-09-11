@@ -18,6 +18,23 @@ export default function DocumentsSection({ tenantId, propertyId }: { tenantId?: 
     const list = tenantId ? await listDocumentsForTenant(tenantId) : await listDocumentsForProperty(propertyId!)
     setDocs(list)
   }
+  const [imageUrls, setImageUrls] = useState<Record<string,string>>({})
+
+  useEffect(() => {
+    async function fetchImages() {
+      const imgs = {} as Record<string,string>
+      await Promise.all(docs.map(async d => {
+        const ext = d.file_name.split('.').pop()?.toLowerCase() || ''
+        if (['png','jpg','jpeg','webp','gif'].includes(ext)) {
+          try {
+            imgs[d.id] = await getSignedUrl(d.file_path)
+          } catch (e) { /* ignore */ }
+        }
+      }))
+      setImageUrls(imgs)
+    }
+    fetchImages()
+  }, [docs])
   useEffect(() => { refresh() }, [tenantId, propertyId])
 
   const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,9 +70,12 @@ export default function DocumentsSection({ tenantId, propertyId }: { tenantId?: 
       {docs.length === 0 && <p className="text-[13px] text-[var(--ink-3)] font-medium mb-2.5">Nenhum documento anexado.</p>}
       {docs.map(d => (
         <div key={d.id} className="flex justify-between items-center px-3.5 py-2.5 bg-white/60 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-[13px] mb-2">
-          <button className="link text-left text-sm" onClick={() => open(d)}>
-            📎 {d.file_name} <span className="text-[var(--ink-3)] text-xs">· {DOC_CATEGORY_LABEL[d.category] ?? d.category}</span>
-          </button>
+          <div className="flex items-center gap-3">
+            {imageUrls[d.id] ? <img src={imageUrls[d.id]} alt={d.file_name} className="w-12 h-12 object-cover rounded-md" onClick={() => open(d)} /> : <div className="w-12 h-12 rounded-md bg-white/10 flex items-center justify-center">📎</div>}
+            <button className="link text-left text-sm" onClick={() => open(d)}>
+              {d.file_name} <span className="text-[var(--ink-3)] text-xs">· {DOC_CATEGORY_LABEL[d.category] ?? d.category}</span>
+            </button>
+          </div>
           <button className="text-[var(--color-red)] text-xs font-semibold" onClick={() => remove(d)}>Remover</button>
         </div>
       ))}

@@ -11,6 +11,9 @@ const items = [
   { to: '/despesas', label: 'Despesas', ico: '📄', cls: 'i-pay' },
   { to: '/mensagens', label: 'Mensagens', ico: '✉', cls: 'i-msg' },
   { to: '/relatorios', label: 'Relatórios', ico: '📊', cls: 'i-dash' },
+  { to: '/recibos', label: 'Recibos', ico: '🧾', cls: 'i-dash' },
+  { to: '/sops', label: 'Procedimentos', ico: '📝', cls: 'i-dash' },
+  { to: '/templates', label: 'Templates', ico: '📁', cls: 'i-dash' },
   { to: '/interessados', label: 'Interessados', ico: '★', cls: 'i-user' },
   { to: '/senhorios', label: 'Senhorios', ico: '🧑', cls: 'i-home' },
   { to: '/calendario', label: 'Calendário', ico: '📅', cls: 'i-pay' },
@@ -27,8 +30,8 @@ const icoBg: Record<string, string> = {
 
 export default function Sidebar({ alertCount = 0 }: { alertCount?: number }) {
   return (
-    <aside className="glass-panel w-[250px] shrink-0 m-[18px_0_18px_18px] sticky top-[18px] h-[calc(100vh-36px)] rounded-[26px] flex flex-col overflow-hidden">
-      <div className="px-[22px] pt-[26px] pb-[18px]">
+    <aside className="glass-panel w-full md:w-[250px] shrink-0 m-[12px_0_12px_12px] md:m-[18px_0_18px_18px] md:sticky md:top-[18px] md:h-[calc(100vh-36px)] rounded-[18px] md:rounded-[26px] flex flex-col overflow-hidden">
+      <div className="px-[14px] md:px-[22px] pt-[14px] md:pt-[26px] pb-[12px] md:pb-[18px]">
         <div className="flex items-center gap-3">
           <div
             className="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center text-white font-bold text-lg"

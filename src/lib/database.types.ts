@@ -130,6 +130,7 @@ export interface Database {
           amount: number
           date: string
           maintenance_id: string | null
+            sop_id: string | null
           created_by: string | null
           created_at: string
         }
@@ -137,6 +138,24 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['expenses']['Row']>
         Relationships: []
       }
+
+        sops: {
+          Row: {
+            id: string
+            property_id: string
+            tenant_id: string | null
+            created_by: string | null
+            created_at: string
+            title: string
+            description: string | null
+            status: string
+            documents: any[]
+            metadata: { [key: string]: any }
+          }
+          Insert: Partial<Database['public']['Tables']['sops']['Row']> & { property_id: string; title: string }
+          Update: Partial<Database['public']['Tables']['sops']['Row']>
+          Relationships: []
+        }
       leads: {
         Row: {
           id: string

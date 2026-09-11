@@ -19,6 +19,11 @@ export function Select({ className, ...props }: SelectHTMLAttributes<HTMLSelectE
   return <select {...props} className={className ? `${inputCls} ${className}` : inputCls} />
 }
 
+export function TextArea({ className, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  const cls = className ? `${inputCls} ${className}` : inputCls
+  return <textarea {...props} className={cls} />
+}
+
 export function FieldRow({ children }: { children: ReactNode }) {
   return <div className="grid grid-cols-2 gap-3.5">{children}</div>
 }

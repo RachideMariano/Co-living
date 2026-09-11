@@ -61,6 +61,7 @@ export default function Expenses() {
                 <th className="p-3.5 font-bold">Apartamento</th>
                 <th className="p-3.5 font-bold">Categoria</th>
                 <th className="p-3.5 font-bold">Descrição</th>
+                <th className="p-3.5 font-bold">SOP</th>
                 <th className="p-3.5 font-bold text-right">Valor</th>
               </tr>
             </thead>
@@ -71,6 +72,7 @@ export default function Expenses() {
                   <td className="p-3.5">{propById(e.property_id)?.name ?? '—'}</td>
                   <td className="p-3.5">{e.category}{e.maintenance_id && <span className="text-[var(--ink-3)] text-xs"> · manutenção</span>}</td>
                   <td className="p-3.5 text-[var(--ink-3)]">{e.description || '—'}</td>
+                  <td className="p-3.5">{e.sop_id ? <a href={`#/sops/${e.sop_id}`} className="link">Ver SOP</a> : '—'}</td>
                   <td className="p-3.5 text-right font-bold" style={{ fontVariantNumeric: 'tabular-nums' }}>{eur(e.amount)}</td>
                 </tr>
               ))}
