@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import PageHead from '../components/PageHead'
 import { Button } from '../components/Button'
-import { Field, FieldRow, Input } from '../components/Field'
+import { Field, Input } from '../components/Field'
 import { eur } from '../lib/format'
 
 export default function Acquisitions() {
