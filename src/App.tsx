@@ -19,6 +19,7 @@ import CalendarPage from './pages/Calendar'
 import Receipts from './pages/Receipts'
 import Templates from './pages/Templates'
 import SOPs from './pages/SOPs'
+import Materials from './pages/Materials'
 
 export default function App() {
   return (
@@ -44,6 +45,7 @@ export default function App() {
                 <Route path="templates" element={<Templates />} />
                 <Route path="sops" element={<SOPs />} />
                 <Route path="sops/:id" element={<SOPs />} />
+                <Route path="materiais" element={<Materials />} />
                 <Route path="calendario" element={<CalendarPage />} />
               </Route>
             </Route>
