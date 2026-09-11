@@ -31,9 +31,13 @@ const icoBg: Record<string, string> = {
   'i-landlord': '#000',
 }
 
-export default function Sidebar({ alertCount = 0 }: { alertCount?: number }) {
+export default function Sidebar({ alertCount = 0, mobileOpen = false, onClose }: { alertCount?: number; mobileOpen?: boolean; onClose?: () => void }) {
+  const mobileClasses = mobileOpen
+    ? 'fixed inset-0 left-0 top-0 bottom-0 w-[86%] max-w-[380px] z-50 m-4 rounded-[18px]'
+    : 'hidden'
+
   return (
-    <aside className="glass-panel w-full md:w-[250px] shrink-0 m-[12px_0_12px_12px] md:m-[18px_0_18px_18px] md:sticky md:top-[18px] md:h-[calc(100vh-36px)] rounded-[18px] md:rounded-[26px] flex flex-col overflow-hidden">
+    <aside className={`glass-panel ${mobileClasses} w-full md:w-[250px] shrink-0 m-[12px_0_12px_12px] md:m-[18px_0_18px_18px] md:sticky md:top-[18px] md:h-[calc(100vh-36px)] rounded-[18px] md:rounded-[26px] flex flex-col overflow-hidden`}>
       <div className="px-[14px] md:px-[22px] pt-[14px] md:pt-[26px] pb-[12px] md:pb-[18px]">
         <div className="flex items-center gap-3">
           <div
@@ -46,6 +50,11 @@ export default function Sidebar({ alertCount = 0 }: { alertCount?: number }) {
             <h1 className="text-[16.5px] font-bold tracking-tight">Co-living OS</h1>
             <p className="text-[11px] uppercase tracking-wider font-semibold text-[var(--ink-3)]">Gestão Pro</p>
           </div>
+          {onClose && (
+            <button onClick={onClose} className="ml-auto md:hidden p-1.5 rounded-md bg-white/10" aria-label="Close menu">
+              <span className="text-[18px]">✕</span>
+            </button>
+          )}
         </div>
       </div>
 
