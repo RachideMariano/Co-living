@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 const items = [
   { to: '/', label: 'Dashboard', ico: '◫', cls: 'i-dash', end: true },
   { to: '/apartamentos', label: 'Apartamentos', ico: '⌂', cls: 'i-home' },
+  { to: '/apartamentos/por-adquirir', label: 'Por adquirir', ico: '🏚️', cls: 'i-home' },
   { to: '/inquilinos', label: 'Inquilinos', ico: '☺', cls: 'i-user' },
   { to: '/pagamentos', label: 'Pagamentos', ico: '€', cls: 'i-pay' },
   { to: '/alertas', label: 'Alertas', ico: '!', cls: 'i-bell' },

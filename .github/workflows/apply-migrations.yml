@@ -1,0 +1,36 @@
+name: Apply Supabase Migrations
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  apply-migrations:
+    name: Apply migrations to Supabase
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install psql
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Apply SQL migrations
+        if: ${{ secrets.SUPABASE_DATABASE_URL }}
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+        run: |
+          set -e
+          echo "Using DATABASE_URL from secrets"
+          ls -la supabase/migrations || true
+          for f in $(ls supabase/migrations/*.sql | sort -V); do
+            echo "--- Applying: $f ---"
+            psql "$DATABASE_URL" -f "$f"
+          done
+
+      - name: Skip if no database secret
+        if: ${{ !secrets.SUPABASE_DATABASE_URL }}
+        run: echo "SUPABASE_DATABASE_URL secret not set — skipping migrations"
