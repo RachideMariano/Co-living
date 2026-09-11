@@ -245,6 +245,23 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['documents']['Row']>
         Relationships: []
       }
+      materials: {
+        Row: {
+          id: string
+          property_id: string | null
+          name: string
+          quantity: number
+          unit: string | null
+          location: string | null
+          notes: string | null
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: Partial<Database['public']['Tables']['materials']['Row']> & { name: string }
+        Update: Partial<Database['public']['Tables']['materials']['Row']>
+        Relationships: []
+      }
       inspections: {
         Row: {
           id: string

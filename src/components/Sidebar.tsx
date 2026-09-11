@@ -9,6 +9,7 @@ const items = [
   { to: '/alertas', label: 'Alertas', ico: '!', cls: 'i-bell' },
   { to: '/manutencao', label: 'Manutenção', ico: '🔧', cls: 'i-bell' },
   { to: '/despesas', label: 'Despesas', ico: '📄', cls: 'i-pay' },
+  { to: '/materiais', label: 'Materiais', ico: '🧰', cls: 'i-home' },
   { to: '/mensagens', label: 'Mensagens', ico: '✉', cls: 'i-msg' },
   { to: '/relatorios', label: 'Relatórios', ico: '📊', cls: 'i-dash' },
   { to: '/recibos', label: 'Recibos', ico: '🧾', cls: 'i-dash' },
@@ -26,6 +27,7 @@ const icoBg: Record<string, string> = {
   'i-pay': 'linear-gradient(145deg,#8f79f2,#bf5af2)',
   'i-bell': 'linear-gradient(145deg,#ff6961,#ff453a)',
   'i-msg': 'linear-gradient(145deg,#6ad7ff,#37b8f2)',
+  'i-landlord': '#000',
 }
 
 export default function Sidebar({ alertCount = 0 }: { alertCount?: number }) {
